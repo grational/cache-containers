@@ -37,8 +37,8 @@ project.ext {
 project.with {
 	//project.name is set in the settings.gradle with rootProject.name
 	group                 "it.italiaonline.rnd"
-	version               "0.1.0-SNAPSHOT" // (remove -SNAPSHOT for releases)
-	description           "A 'gigawatt' powered project."
+	version               "0.1.0" // (remove -SNAPSHOT for releases)
+	description           "A set of classes to create transparent permanent cache compressed files stored on disks."
 	wrapper.gradleVersion "$gradleVersion"
 }
 
