@@ -1,7 +1,6 @@
 # Created with 'gigawatt' using the API of https://www.gitignore.io #
 # @parameters: java gradle vim eclipse linux
 
-
 ### Vim ###
 # swap
 [._]*.s[a-w][a-z]

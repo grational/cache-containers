@@ -24,36 +24,40 @@ plugins {
 
 // [general] configuration
 project.ext {
-	sourceCompatibility = '1.8'
-	targetCompatibility = "$sourceCompatibility"
-	groovyVersion       = '2.4.7'
-	gradleVersion       = '3.2.1'
-	spockVersion        = '1.0-groovy-2.4'
-	codenarcVersion     = '0.24.1'
-	slf4jVersion        = '1.7.21'
-	log4jVersion        = '2.6.2'
+	groovyVersion               = '2.4.7'
+	gradleVersion               = '3.2.1'
+	spockVersion                = '1.0-groovy-2.4'
+	codenarcVersion             = '0.24.1'
+	slf4jVersion                = '1.7.21'
+	jedisVersion                = '2.9.0'
+	cglibVersion                = '3.2.4'
+	objenesisVersion            = '2.5.1'
+	compressorDecoratorsVersion = '0.1.0-SNAPSHOT'
+	hashDecoratorsVersion       = '0.1.0-SNAPSHOT'
 }
 
 project.with {
 	//project.name is set in the settings.gradle with rootProject.name
 	group                 "it.italiaonline.rnd"
-	version               "0.1.0" // (remove -SNAPSHOT for releases)
+	version               "0.3.0-SNAPSHOT" // (remove -SNAPSHOT for releases)
 	description           "A set of classes to create transparent permanent cache compressed files stored on disks."
 	wrapper.gradleVersion "$gradleVersion"
 }
 
-repositories {
-	jcenter()
+// target java 8
+allprojects {
+	sourceCompatibility = 8
+	targetCompatibility = 8
+}
 
+repositories {
 	// testing nexus server reachability
 	Integer.metaClass.getSeconds = { delegate * 1000 }
 	try {
 		if ( new URL(nexusUrl).getText(connectTimeout: 5.seconds).contains('Sonatype Nexus') ) {
 			logger.warn("Adding maven repositories, nexus <$nexusUrl>")
-			maven {
-				url "${nexusUrl}/content/repositories/snapshots"
-				url "${nexusUrl}/content/repositories/releases"
-			}
+			maven { url "${nexusUrl}/content/repositories/snapshots" }
+			maven { url "${nexusUrl}/content/repositories/releases"  }
 		} else {
 			logger.warn("maven repos skipped cause <$nexusUrl> is not reachable!")
 		}
@@ -61,20 +65,25 @@ repositories {
 		def host = nexusUrl.find($/(?<=https?://)[^/]+/$)
 		logger.warn("Problems adding maven repos <$host>!")
 	}
+	jcenter()
 }
 
 dependencies {
 	// Groovy language support
 	compile "org.codehaus.groovy:groovy-all:$groovyVersion"
+	compile "redis.clients:jedis:$jedisVersion"
 
-	// Slf4j dependencies with log4j2 backend
+	// Slf4j dependencies
 	compile "org.slf4j:slf4j-api:$slf4jVersion"
-	compile "org.apache.logging.log4j:log4j-slf4j-impl:$log4jVersion"
-	compile "org.apache.logging.log4j:log4j-api:$log4jVersion"
-	compile "org.apache.logging.log4j:log4j-core:$log4jVersion"
+
+	// internal nexus dependencies
+	compile "it.italiaonline.rnd:hash-decorators:$hashDecoratorsVersion"
+	compile "it.italiaonline.rnd:compression-decorators:$compressorDecoratorsVersion"
 
 	// We use the awesome Spock testing and specification framework
 	testCompile "org.spockframework:spock-core:$spockVersion"
+	testCompile "cglib:cglib-nodep:$cglibVersion"
+	testCompile "org.objenesis:objenesis:$objenesisVersion"
 }
 
 // codenarc groovy source analyses

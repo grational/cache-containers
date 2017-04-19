@@ -1,36 +1,42 @@
 package it.italiaonline.rnd.cache
 
-final class CacheFile {
+import java.time.Duration
+import it.italiaonline.rnd.compression.CompressionEngine
+
+final class CacheFile implements CacheContainer {
 
 	private final File file
+	private final CompressionEngine compressor
 
-	CacheFile(File cfile) {
-		this.file = cfile
+	CacheFile (
+		File cfile,
+		CompressionEngine ce
+	) {
+		this.file = Objects.requireNonNull(cfile)
+		if (!this.file.getParentFile().isDirectory())
+			throw new IllegalArgumentException("The parent directory of '${cfile} does not exists!")
+		this.compressor = Objects.requireNonNull(ce)
 	}
 
-	Boolean valid(BigInteger leaseTime) {
-		(this.file.isFile() && this.newer(leaseTime))
+	Boolean valid(Duration leaseTime) {
+		this.file.isFile() && this.newer(leaseTime)
 	}
 
 	String content() {
-		new GZipEngine().unzip(this.file.text)
+		this.compressor.uncompress(this.file.text)
 	}
 
-	void write(
-		String input,
-		String charset = 'UTF-8'
-	) {
-		this.file.getParentFile()?.mkdirs()
-		this.file.write(
-			new GZipEngine().zip(input),
+	void write(String input, String charset = 'UTF-8') {
+		this.file.write (
+			this.compressor.compress(input),
 			charset
 		)
 	}
 
-	private Boolean newer(BigInteger leaseTime) {
+	private Boolean newer(Duration leaseTime) {
 		Long currentEpoch = new Date().getTime()
 		Long lastModified = this.file.lastModified()
-		( (currentEpoch - lastModified) < leaseTime )
+		( (currentEpoch - lastModified) < leaseTime.toMillis() )
 	}
 
 }
