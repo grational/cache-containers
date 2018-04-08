@@ -32,14 +32,14 @@ project.ext {
 	jedisVersion                = '2.9.0'
 	cglibVersion                = '3.2.4'
 	objenesisVersion            = '2.5.1'
-	compressorDecoratorsVersion = '0.1.0-SNAPSHOT'
-	hashDecoratorsVersion       = '0.1.0-SNAPSHOT'
+	compressorDecoratorsVersion = '0.1.0'
+	hashDecoratorsVersion       = '0.1.0'
 }
 
 project.with {
 	//project.name is set in the settings.gradle with rootProject.name
 	group                 "it.italiaonline.rnd"
-	version               "0.3.0-SNAPSHOT" // (remove -SNAPSHOT for releases)
+	version               "0.3.0" // (remove -SNAPSHOT for releases)
 	description           "A set of classes to create transparent permanent cache compressed files stored on disks."
 	wrapper.gradleVersion "$gradleVersion"
 }
@@ -51,21 +51,9 @@ allprojects {
 }
 
 repositories {
-	// testing nexus server reachability
-	Integer.metaClass.getSeconds = { delegate * 1000 }
-	try {
-		if ( new URL(nexusUrl).getText(connectTimeout: 5.seconds).contains('Sonatype Nexus') ) {
-			logger.warn("Adding maven repositories, nexus <$nexusUrl>")
-			maven { url "${nexusUrl}/content/repositories/snapshots" }
-			maven { url "${nexusUrl}/content/repositories/releases"  }
-		} else {
-			logger.warn("maven repos skipped cause <$nexusUrl> is not reachable!")
-		}
-	} catch (IOException e) {
-		def host = nexusUrl.find($/(?<=https?://)[^/]+/$)
-		logger.warn("Problems adding maven repos <$host>!")
-	}
 	jcenter()
+
+	maven { url 'https://jitpack.io' }
 }
 
 dependencies {
@@ -77,8 +65,8 @@ dependencies {
 	compile "org.slf4j:slf4j-api:$slf4jVersion"
 
 	// internal nexus dependencies
-	compile "it.italiaonline.rnd:hash-decorators:$hashDecoratorsVersion"
-	compile "it.italiaonline.rnd:compression-decorators:$compressorDecoratorsVersion"
+	compile "com.github.grational:hash-decorators:$hashDecoratorsVersion"
+	compile "com.github.grational:compression-decorators:$compressorDecoratorsVersion"
 
 	// We use the awesome Spock testing and specification framework
 	testCompile "org.spockframework:spock-core:$spockVersion"
@@ -104,26 +92,6 @@ codenarc{
 		maxPriority1Violations 0
 		maxPriority2Violations 10
 		maxPriority3Violations 20
-	}
-}
-
-// [maven] upload to http nexus configuration
-configurations {
-	deployerJars
-}
-dependencies {
-	// needed to deploy on nexus via http
-	deployerJars "org.apache.maven.wagon:wagon-http:2.+"
-}
-uploadArchives {
-	repositories.mavenDeployer {
-		configuration = configurations.deployerJars
-		repository(url: "${nexusUrl}/content/repositories/releases") {
-			authentication(userName: nexusUsername, password: nexusPassword)
-		}
-		snapshotRepository(url: "${nexusUrl}/content/repositories/snapshots") {
-			authentication(userName: nexusUsername, password: nexusPassword)
-		}
 	}
 }
 
