@@ -20,6 +20,8 @@ plugins {
 	id 'net.saliman.cobertura' version '2.3.2'
 	// integration with nexus repository (and more)
 	id 'maven'
+	// awesome git tag / gradle version integration
+	id 'pl.allegro.tech.build.axion-release' version '1.9.1'
 }
 
 // [general] configuration
@@ -39,7 +41,7 @@ project.ext {
 project.with {
 	//project.name is set in the settings.gradle with rootProject.name
 	group                 "it.italiaonline.rnd"
-	version               "0.3.0" // (remove -SNAPSHOT for releases)
+	version               scmVersion.version // '0.5.0' (remove -SNAPSHOT for releases)
 	description           "A set of classes to create transparent permanent cache compressed files stored on disks."
 	wrapper.gradleVersion "$gradleVersion"
 }
