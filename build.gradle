@@ -17,9 +17,7 @@ plugins {
 	// groovy code linter
 	id 'codenarc'
 	// test code coverage plugin
-	id 'net.saliman.cobertura' version '2.3.2'
-	// integration with nexus repository (and more)
-	id 'maven'
+	id 'net.saliman.cobertura' version '2.5.4'
 	// awesome git tag / gradle version integration
 	id 'pl.allegro.tech.build.axion-release' version '1.9.1'
 }
