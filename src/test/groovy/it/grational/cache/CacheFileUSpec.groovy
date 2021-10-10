@@ -1,16 +1,16 @@
-package it.italiaonline.rnd.cache
+package it.grational.cache
 
 import spock.lang.Specification
 import spock.lang.Shared
 import java.time.Duration
-import it.italiaonline.rnd.compression.GZipEngine
-import it.italiaonline.rnd.compression.NoCompression
+import it.grational.compression.Gzip
+import it.grational.compression.NoCompression
 
 /**
  * Test the correct behaviour of the public methods of 
  * CacheFile class
  */
-class CacheFileSpec extends Specification {
+class CacheFileUSpec extends Specification {
 	@Shared
 	File tmpFile = new File(System.properties.'java.io.tmpdir','cache.test')
 
@@ -42,7 +42,7 @@ class CacheFileSpec extends Specification {
 		and:  'A lease time longer then 24 hours return true'
 			cf.valid(Duration.ofMillis(25.hours)) == true
 		where:
-			compressor << [new GZipEngine(), new NoCompression()]
+			compressor << [new Gzip(), new NoCompression()]
 	}
 
 	def "valid() method should recognize actual files from directories"() {
@@ -55,7 +55,7 @@ class CacheFileSpec extends Specification {
 		and: 'A lease time longer then 24 hours return true'
 			cf.valid(Duration.ofMillis(25.hours)) == false
 		where:
-			compressor << [new GZipEngine(), new NoCompression()]
+			compressor << [new Gzip(), new NoCompression()]
 	}
 
 	def "Try to write() some content and retrieve it from the file"() {
@@ -66,7 +66,7 @@ class CacheFileSpec extends Specification {
 		then: 'The content retrieved is equal to that previously written'
 			cf.content() == fileContent
 		where:
-			compressor << [new GZipEngine(), new NoCompression()]
+			compressor << [new Gzip(), new NoCompression()]
 	}
 }
 // vim: fdm=indent

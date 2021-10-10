@@ -1,4 +1,4 @@
-package it.italiaonline.rnd.cache
+package it.grational.cache
 
 import spock.lang.Specification
 import spock.lang.Shared
@@ -6,14 +6,14 @@ import spock.lang.Unroll
 import java.time.Duration
 import redis.clients.jedis.Jedis
 import redis.clients.jedis.exceptions.JedisDataException
-import it.italiaonline.rnd.compression.GZipEngine
-import it.italiaonline.rnd.compression.NoCompression
+import it.grational.compression.Gzip
+import it.grational.compression.NoCompression
 
 /**
  * Test the correct behaviour of the public methods of
  * CacheRedis class
  */
-class CacheRedisSpec extends Specification {
+class CacheRedisISpec extends Specification {
 
 	@Shared Jedis    jedis
 	@Shared String   existingKey   = 'existingKey'
@@ -29,13 +29,13 @@ class CacheRedisSpec extends Specification {
 			CacheRedis cr = new CacheRedis (
 				jedis,        // Jedis jedis
 				existingKey,  // String key
-				compressor,   // CompressionEngine ce
-				expireTime    // Duration expireTime
+				expireTime,   // Duration expireTime
+				compressor    // Compressor ce
 			)
 		then: 'no exception is thrown'
 			noExceptionThrown()
 		where:
-			compressor << [new GZipEngine(), new NoCompression()]
+			compressor << [new Gzip(), new NoCompression()]
 	}
 
 	@Unroll
@@ -46,8 +46,8 @@ class CacheRedisSpec extends Specification {
 			CacheRedis cr = new CacheRedis (
 				jd,         // jedis object
 				key,        // key
-				compressor, // CompressionEngine ce
-				time        // expireTime
+				time,       // expireTime
+				compressor  // Compressor ce
 			)
 
 		then: 'a NullPointerException is thrown'
@@ -58,7 +58,7 @@ class CacheRedisSpec extends Specification {
 			null  | existingKey | expireTime || NullPointerException
 			jedis | null        | expireTime || NullPointerException
 			jedis | existingKey | null       || NullPointerException
-			compressor << [new GZipEngine(), new NoCompression(), new GZipEngine()]
+			compressor << [new Gzip(), new NoCompression(), new Gzip()]
 	}
 
 	@Unroll
@@ -69,8 +69,8 @@ class CacheRedisSpec extends Specification {
 			CacheRedis cr = new CacheRedis (
 				jedis,        // Jedis jedis
 				existingKey,  // String key
-				compressor,   // CompressionEngine ce
-				expireTime    // Duration expireTime
+				expireTime,   // Duration expireTime
+				compressor    // Compressor ce
 			)
 		and:
 			long fifteenHoursAgo = java.time.Instant.now().epochSecond - Duration.ofHours(15).seconds
@@ -92,7 +92,7 @@ class CacheRedisSpec extends Specification {
 			result == true
 
 		where:
-			compressor << [new GZipEngine(), new NoCompression()]
+			compressor << [new Gzip(), new NoCompression()]
 	}
 
 	@Unroll
@@ -104,8 +104,8 @@ class CacheRedisSpec extends Specification {
 			CacheRedis cr = new CacheRedis (
 				jedis,          // Jedis jedis
 				nonExistingKey, // String key
-				compressor,     // CompressionEngine ce
-				expireTime      // Duration expireTime
+				expireTime,     // Duration expireTime
+				compressor      // Compressor ce
 			)
 		when: 'call the content method'
 			cr.content()
@@ -113,7 +113,7 @@ class CacheRedisSpec extends Specification {
 			1 * jedis.get("${nonExistingKey}:content") >> null
 			thrown(IllegalStateException)
 		where:
-			compressor << [new GZipEngine(), new NoCompression()]
+			compressor << [new Gzip(), new NoCompression()]
 	}
 
 	@Unroll
@@ -124,8 +124,8 @@ class CacheRedisSpec extends Specification {
 			CacheRedis cr = new CacheRedis (
 				jedis,        // Jedis jedis
 				existingKey,  // String key
-				compressor,   // CompressionEngine ce
-				expireTime    // Duration expireTime
+				expireTime,   // Duration expireTime
+				compressor    // Compressor ce
 			)
 		when: 'ask for the content of the existing key'
 			def result = cr.content()
@@ -135,7 +135,7 @@ class CacheRedisSpec extends Specification {
 			}
 			result == keyContent
 		where:
-			compressor << [new GZipEngine(), new NoCompression()]
+			compressor << [new Gzip(), new NoCompression()]
 	}
 
 	@Unroll
@@ -148,8 +148,8 @@ class CacheRedisSpec extends Specification {
 			CacheRedis cr = new CacheRedis (
 				jedis,        // Jedis jedis
 				newKey,       // String key
-				compressor,   // CompressionEngine ce
-				expireTime    // Duration expireTime
+				expireTime,   // Duration expireTime
+				compressor    // Compressor ce
 			)
 		when: 'check for the key to exists'
 			cr.valid(Duration.ofDays(2))
@@ -167,7 +167,7 @@ class CacheRedisSpec extends Specification {
 			}
 			result == keyContent
 		where:
-			compressor << [new GZipEngine(), new NoCompression()]
+			compressor << [new Gzip(), new NoCompression()]
 	}
 }
 // vim: fdm=indent

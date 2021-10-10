@@ -1,8 +1,9 @@
-package it.italiaonline.rnd.cache
+package it.grational.cache
 
 import java.time.Duration
 import redis.clients.jedis.Jedis
-import it.italiaonline.rnd.compression.CompressionEngine
+import it.grational.compression.Compressor
+import it.grational.compression.NoCompression
 import java.time.Instant
 
 final class CacheRedis implements CacheContainer {
@@ -10,18 +11,18 @@ final class CacheRedis implements CacheContainer {
 	private final String            cacheKey
 	private final Jedis             jedis
 	private final Duration          expireTime
-	private final CompressionEngine compressor
+	private final Compressor compressor
 
 	CacheRedis (
 		Jedis             jd,
 		String            key,
-		CompressionEngine ce,
-		Duration          expire
+		Duration          expire,
+		Compressor ce = new NoCompression()
 	) {
 		this.jedis      = Objects.requireNonNull(jd)
 		this.cacheKey   = Objects.requireNonNull(key)
-		this.compressor = Objects.requireNonNull(ce)
 		this.expireTime = Objects.requireNonNull(expire)
+		this.compressor = ce
 	}
 
 	Boolean valid(Duration leaseTime) {

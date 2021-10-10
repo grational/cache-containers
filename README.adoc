@@ -1,3 +1,6 @@
-= cache-decorators
+= cache-containers
 
-A 'gigawatt' powered project.
+The project offers a generic interface `CacheContainer` and a couple of its implementations to create a transparent permanent compressed cache stored externally:
+
+. `CacheFile` that uses an external file as cache store. It uses a file stored in the `JDK` defined temporary directory of the filesystem by default 
+. `CacheRedis` that leverages the external Redis nosql server to store the data

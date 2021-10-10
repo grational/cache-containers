@@ -1,21 +1,22 @@
-package it.italiaonline.rnd.cache
+package it.grational.cache
 
 import java.time.Duration
-import it.italiaonline.rnd.compression.CompressionEngine
+import it.grational.compression.Compressor
+import it.grational.compression.NoCompression
 
 final class CacheFile implements CacheContainer {
 
 	private final File file
-	private final CompressionEngine compressor
+	private final Compressor compressor
 
 	CacheFile (
-		File cfile,
-		CompressionEngine ce
+		File cfile = File.createTempFile('temp','.cache'),
+		Compressor ce = new NoCompression()
 	) {
-		this.file = Objects.requireNonNull(cfile)
+		this.file = cfile
 		if (!this.file.getParentFile().isDirectory())
 			throw new IllegalArgumentException("The parent directory of '${cfile} does not exists!")
-		this.compressor = Objects.requireNonNull(ce)
+		this.compressor = ce
 	}
 
 	Boolean valid(Duration leaseTime) {
