@@ -20,13 +20,13 @@ plugins {
 
 // [general] configuration
 project.ext {
-	groovyVersion        = '3.0.9'
-	spockVersion         = '2.0-groovy-3.0'
+	groovyVersion        = '2.5.15'
+	spockVersion         = '2.0-groovy-2.5'
 	codenarcVersion      = '2.2.0'
 	slf4jVersion         = '1.7.32'
 	jedisVersion         = '3.7.0'
-	compressorsVersion   = 'release-1.0.0'
-	hashFunctionsVersion = 'release-1.0.0'
+	compressorsVersion   = 'groovy-v2.x-SNAPSHOT'
+	hashFunctionsVersion = 'groovy-v2.x-SNAPSHOT'
 }
 
 scmVersion {
