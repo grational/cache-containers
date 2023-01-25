@@ -1,7 +1,6 @@
 package it.grational.cache
 
-import spock.lang.Specification
-import spock.lang.Shared
+import spock.lang.*
 import java.time.Duration
 import it.grational.compression.Gzip
 import it.grational.compression.NoCompression
@@ -20,6 +19,8 @@ class CacheFileUSpec extends Specification {
 	def setupSpec() {
 
 		tmpFile.createNewFile()
+
+		tmpFile.write(fileContent)
 
 		def yesterday = new Date() - 1
 		tmpFile.setLastModified(yesterday.getTime())
@@ -67,6 +68,37 @@ class CacheFileUSpec extends Specification {
 			cf.content() == fileContent
 		where:
 			compressor << [new Gzip(), new NoCompression()]
+	}
+
+	def "An empty file should not be valid"() {
+		given: 'A file not yet created'
+			File randomEmptyFile = this.randomEmptyFile()
+		when: 'A CacheFile created from a temporary file'
+			CacheFile cf = new CacheFile(randomEmptyFile)
+		then: 'The cacheFile is invalid since the file i'
+			cf.valid(Duration.ofMillis(5.seconds)) == false
+
+		when:
+			cf.write(fileContent)
+		then:
+			cf.valid(Duration.ofMillis(5.seconds)) == true
+
+		cleanup:
+			randomEmptyFile.delete()
+	}
+
+	private File randomEmptyFile() {
+		def randomSeed = new Random()
+		def randomFilename = "${randomSeed.nextInt()}.${randomSeed.nextInt()}"
+		def randomFile = new File (
+			String.format (
+				"%s/%s",
+				System.properties.'java.io.tmpdir',
+				randomFilename
+			)
+		)
+		randomFile.createNewFile()
+		return randomFile
 	}
 }
 // vim: fdm=indent

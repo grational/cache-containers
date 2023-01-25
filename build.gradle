@@ -78,12 +78,13 @@ tasks.withType(Test) {
 	maxParallelForks = Runtime.runtime.availableProcessors() / 2
 }
 
+// required to work with jitpack.io
 publishing {
 	publications {
 		mavenJava(MavenPublication) {
 			groupId = 'com.github.grational'
 			artifactId = 'cache-containers'
-			version = scmVersion.version // '0.5.0' (remove -SNAPSHOT for releases)
+			version = "release-${scmVersion.version}" // '0.5.0' (remove -SNAPSHOT for releases)
 
 			from components.java
 		}

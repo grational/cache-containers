@@ -20,7 +20,11 @@ final class CacheFile implements CacheContainer {
 	}
 
 	Boolean valid(Duration leaseTime) {
-		this.file.isFile() && this.newer(leaseTime)
+		this.file.isFile() && this.isNotEmpty() && this.newer(leaseTime)
+	}
+
+	private Boolean isNotEmpty() {
+		this.file.length()
 	}
 
 	String content() {
