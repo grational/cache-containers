@@ -35,6 +35,7 @@ class CacheFileUSpec extends Specification {
 		tmpFile.delete()
 	}
 
+	@Unroll
 	def "valid() method should correctly handle lease time"() {
 		when: 'create a new CacheFile from the 24h old temp file'
 			CacheFile cf = new CacheFile(tmpFile,compressor)
@@ -46,6 +47,7 @@ class CacheFileUSpec extends Specification {
 			compressor << [new Gzip(), new NoCompression()]
 	}
 
+	@Unroll
 	def "valid() method should recognize actual files from directories"() {
 		given: 'a temporary file'
 			File tmpDir = new File(System.properties.'java.io.tmpdir')
@@ -59,6 +61,7 @@ class CacheFileUSpec extends Specification {
 			compressor << [new Gzip(), new NoCompression()]
 	}
 
+	@Unroll
 	def "Try to write() some content and retrieve it from the file"() {
 		given: 'A CacheFile created from a temporary file'
 			CacheFile cf = new CacheFile(tmpFile, compressor)
@@ -85,6 +88,20 @@ class CacheFileUSpec extends Specification {
 
 		cleanup:
 			randomEmptyFile.delete()
+	}
+
+	@Unroll
+	def "It should be possibile to invalidate a file cache"() {
+		when: 'create a new CacheFile from the 24h old temp file'
+			CacheFile cf = new CacheFile()
+		and: 
+			cf.invalidate()
+		then: 'after the invalidation the valid method returns always false'
+			cf.valid(Duration.ofMillis(12.hours)) == false
+			cf.valid(Duration.ofMillis(25.hours)) == false
+
+		where:
+			compressor << [new Gzip(), new NoCompression()]
 	}
 
 	private File randomEmptyFile() {

@@ -8,4 +8,6 @@ interface CacheContainer {
 	String content()
 
 	void write(String input)
+
+	void invalidate()
 }

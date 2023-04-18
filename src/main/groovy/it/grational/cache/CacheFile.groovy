@@ -19,6 +19,7 @@ final class CacheFile implements CacheContainer {
 		this.compressor = ce
 	}
 
+	@Override
 	Boolean valid(Duration leaseTime) {
 		this.file.isFile() && this.isNotEmpty() && this.newer(leaseTime)
 	}
@@ -27,15 +28,22 @@ final class CacheFile implements CacheContainer {
 		this.file.length()
 	}
 
+	@Override
 	String content() {
 		this.compressor.uncompress(this.file.text)
 	}
 
+	@Override
 	void write(String input, String charset = 'UTF-8') {
 		this.file.write (
 			this.compressor.compress(input),
 			charset
 		)
+	}
+
+	@Override
+	void invalidate() {
+		this.file.delete()
 	}
 
 	private Boolean newer(Duration leaseTime) {

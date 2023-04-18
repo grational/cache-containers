@@ -1,7 +1,7 @@
 package it.grational.cache
 
 import java.time.Duration
-import redis.clients.jedis.Jedis
+import redis.clients.jedis.commands.JedisCommands
 import it.grational.compression.Compressor
 import it.grational.compression.NoCompression
 import java.time.Instant
@@ -9,12 +9,12 @@ import java.time.Instant
 final class CacheRedis implements CacheContainer {
 
 	private final String            cacheKey
-	private final Jedis             jedis
+	private final JedisCommands     jedis
 	private final Duration          expireTime
 	private final Compressor compressor
 
 	CacheRedis (
-		Jedis             jd,
+		JedisCommands     jd,
 		String            key,
 		Duration          expire,
 		Compressor ce = new NoCompression()
@@ -25,10 +25,14 @@ final class CacheRedis implements CacheContainer {
 		this.compressor = ce
 	}
 
+	@Override
 	Boolean valid(Duration leaseTime) {
-		this.jedis.exists("${this.cacheKey}:content") && this.jedis.exists("${this.cacheKey}:timestamp") && this.newer(Objects.requireNonNull(leaseTime))
+		this.jedis.exists("${this.cacheKey}:content")
+		&& this.jedis.exists("${this.cacheKey}:timestamp")
+		&& this.newer(Objects.requireNonNull(leaseTime))
 	}
 
+	@Override
 	String content() {
 		def result = this.jedis.get("${this.cacheKey}:content")
 		if (result == null)
@@ -36,6 +40,7 @@ final class CacheRedis implements CacheContainer {
 		this.compressor.uncompress(result)
 	}
 
+	@Override
 	void write(String input) {
 		[
 			content: this.compressor.compress(input),
@@ -46,6 +51,12 @@ final class CacheRedis implements CacheContainer {
 			this.jedis.set(key, value as String)
 			this.jedis.expire(key,seconds)
 		}
+	}
+
+	@Override
+	void invalidate() {
+		this.jedis.del("${this.cacheKey}:content")
+		this.jedis.del("${this.cacheKey}:timestamp")
 	}
 
 	private Boolean newer(Duration leaseTime) {

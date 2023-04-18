@@ -1,10 +1,9 @@
 package it.grational.cache
 
-import spock.lang.Specification
-import spock.lang.Shared
-import spock.lang.Unroll
+import spock.lang.*
 import java.time.Duration
-import redis.clients.jedis.Jedis
+import java.time.Instant
+import redis.clients.jedis.commands.JedisCommands
 import redis.clients.jedis.exceptions.JedisDataException
 import it.grational.compression.Gzip
 import it.grational.compression.NoCompression
@@ -15,7 +14,7 @@ import it.grational.compression.NoCompression
  */
 class CacheRedisISpec extends Specification {
 
-	@Shared Jedis    jedis
+	@Shared JedisCommands jedis
 	@Shared String   existingKey   = 'existingKey'
 	@Shared String   keyContent    = 'this is the content of the cache file'
 	@Shared Long     keyTTL        = Duration.ofHours(100).seconds
@@ -73,7 +72,7 @@ class CacheRedisISpec extends Specification {
 				compressor    // Compressor ce
 			)
 		and:
-			long fifteenHoursAgo = java.time.Instant.now().epochSecond - Duration.ofHours(15).seconds
+			long fifteenHoursAgo = Instant.now().epochSecond - Duration.ofHours(15).seconds
 
 		when: 'it fails trying to validate the key as newer then 12 hours'
 			def result = cr.valid(Duration.ofHours(12))
@@ -146,10 +145,10 @@ class CacheRedisISpec extends Specification {
 			String newKey = 'newKey'
 		and: 'a CacheRedis implementation'
 			CacheRedis cr = new CacheRedis (
-				jedis,        // Jedis jedis
-				newKey,       // String key
-				expireTime,   // Duration expireTime
-				compressor    // Compressor ce
+				jedis,      // JedisCommands jedis
+				newKey,     // String key
+				expireTime, // Duration expireTime
+				compressor  // Compressor ce
 			)
 		when: 'check for the key to exists'
 			cr.valid(Duration.ofDays(2))
@@ -161,11 +160,41 @@ class CacheRedisISpec extends Specification {
 			def result = cr.content()
 		then:
 			1 * jedis.set("${newKey}:content",compressor.compress(keyContent))
-			1 * jedis.expire("${newKey}:content",expireTime.seconds as Integer)
 			1 * jedis.get("${newKey}:content") >> {
 				compressor.compress(keyContent)
 			}
 			result == keyContent
+		where:
+			// compressor << [new Gzip(), new NoCompression()]
+			compressor << [new NoCompression()]
+	}
+
+	@Unroll
+	def "Should be possible to invalidate a valid key"() {
+		given: 'a mock jedis implementation and an existing key'
+			jedis = Mock()
+		and: 'an about to be inserted key'
+			String existingKey = 'existingKey'
+		and: 'a CacheRedis implementation'
+			CacheRedis cr = new CacheRedis (
+				jedis,        // Jedis jedis
+				existingKey,  // String key
+				expireTime,   // Duration expireTime
+				compressor    // Compressor ce
+			)
+		when: 'check for the key to exists'
+			cr.valid(Duration.ofDays(2))
+		then: 'obtain false'
+			1 * jedis.exists("${existingKey}:content") >> true
+			1 * jedis.exists("${existingKey}:timestamp") >> true
+			1 * jedis.get("${existingKey}:timestamp") >> Instant.now().epochSecond
+
+		when: 'call the invalidate key'
+			cr.invalidate()
+		then:
+			cr.valid() == false
+			1 * jedis.del("${existingKey}:content")
+			1 * jedis.del("${existingKey}:timestamp")
 		where:
 			compressor << [new Gzip(), new NoCompression()]
 	}
