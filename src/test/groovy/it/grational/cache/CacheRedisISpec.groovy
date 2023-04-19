@@ -56,8 +56,7 @@ class CacheRedisISpec extends Specification {
 			jd    | key         | time       || expectedException
 			null  | existingKey | expireTime || NullPointerException
 			jedis | null        | expireTime || NullPointerException
-			jedis | existingKey | null       || NullPointerException
-			compressor << [new Gzip(), new NoCompression(), new Gzip()]
+			compressor << [new Gzip(), new NoCompression()]
 	}
 
 	@Unroll
@@ -198,5 +197,31 @@ class CacheRedisISpec extends Specification {
 		where:
 			compressor << [new Gzip(), new NoCompression()]
 	}
+
+	def "Make the expire parameter optional"() {
+		given: 'a mock jedis implementation and an existing key'
+			jedis = Mock()
+		and: 'an about to be inserted key'
+			String newKey = 'newKey'
+		and: 'a CacheRedis implementation'
+			CacheRedis cr = new CacheRedis (
+				jedis,        // Jedis jedis
+				newKey        // String key
+			)
+		when: 'check for the key to exists'
+			cr.valid(Duration.ofDays(2))
+		then: 'obtain false'
+			1 * jedis.exists("${newKey}:content") >> false
+
+		when: 'actually write the content and try to retrieve it'
+			cr.write(keyContent)
+			def result = cr.content()
+		then:
+			1 * jedis.set("${newKey}:content",keyContent)
+			0 * jedis.expire("${newKey}:content",Instant.now().epochSecond)
+			1 * jedis.get("${newKey}:content") >> keyContent
+			result == keyContent
+	}
+
 }
 // vim: fdm=indent

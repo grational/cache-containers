@@ -14,14 +14,14 @@ final class CacheRedis implements CacheContainer {
 	private final Compressor compressor
 
 	CacheRedis (
-		JedisCommands     jd,
-		String            key,
-		Duration          expire,
+		JedisCommands jd,
+		String key,
+		Duration expire = null,
 		Compressor ce = new NoCompression()
 	) {
 		this.jedis      = Objects.requireNonNull(jd)
 		this.cacheKey   = Objects.requireNonNull(key)
-		this.expireTime = Objects.requireNonNull(expire)
+		this.expireTime = expire
 		this.compressor = ce
 	}
 
@@ -47,9 +47,10 @@ final class CacheRedis implements CacheContainer {
 			timestamp: Instant.now().epochSecond
 		].each { subkey, value ->
 			def key = "${this.cacheKey}:${subkey}" as String
-			def seconds = this.expireTime.seconds as Integer
 			this.jedis.set(key, value as String)
-			this.jedis.expire(key,seconds)
+			if ( this.expireTime ) {
+				this.jedis.expire(key,this.expireTime.seconds)
+			}
 		}
 	}
 
