@@ -12,21 +12,13 @@ plugins {
 	id 'java-library'
 	// required by jitpack
 	id 'maven-publish'
-	// groovy code linter
-	id 'codenarc'
 	// awesome git tag / gradle version integration
-	id 'pl.allegro.tech.build.axion-release' version '1.13.3'
+	id 'pl.allegro.tech.build.axion-release' version '1.14.5'
 }
 
 // [general] configuration
 project.ext {
-	groovyVersion        = '3.0.9'
-	spockVersion         = '2.3-groovy-3.0'
-	codenarcVersion      = '3.2.0'
-	slf4jVersion         = '2.0.7'
-	jedisVersion         = '4.3.2'
-	compressorsVersion   = 'release-1.0.0'
-	hashFunctionsVersion = 'release-1.0.0'
+	groovyVersion = '3.0.21'
 }
 
 scmVersion {
@@ -42,32 +34,24 @@ project.with {
 	description 'Allow to create a transparent permanent compressed cache stored externally.'
 }
 
-// target java 8
-allprojects {
-	sourceCompatibility = 8
-	targetCompatibility = sourceCompatibility
-}
-
 repositories {
-	jcenter()
-
+	mavenCentral()
 	maven { url 'https://jitpack.io' }
 }
 
 dependencies {
 	implementation (
 		"org.codehaus.groovy:groovy:$groovyVersion",
-		"redis.clients:jedis:$jedisVersion",
-		"org.slf4j:slf4j-api:$slf4jVersion"
+		"redis.clients:jedis:5.1.2"
 	)
 
 	api (
-		"com.github.grational:hash-functions:$hashFunctionsVersion",
-		"com.github.grational:compressors:$compressorsVersion"
+		"com.github.grational:hash-functions:release-1.0.0",
+		"com.github.grational:compressors:release-1.0.0"
 	)
 
 	testImplementation (
-		"org.spockframework:spock-core:$spockVersion",
+		"org.spockframework:spock-core:2.3-groovy-3.0",
 		"org.codehaus.groovy:groovy-dateutil:$groovyVersion"
 	)
 }
@@ -88,27 +72,6 @@ publishing {
 
 			from components.java
 		}
-	}
-}
-
-// codenarc groovy source analyses
-codenarc{
-	toolVersion = "$codenarcVersion"
-
-	codenarcMain {
-		configFile = rootProject.file('config/codenarc/ruleset.groovy')
-		exclude "**/package-info.*"
-		ignoreFailures true       // does not block builds
-		maxPriority1Violations 0
-		maxPriority2Violations 10
-		maxPriority3Violations 20
-	}
-	codenarcTest {
-		configFile = rootProject.file('config/codenarc/ruleset-test.groovy')
-		ignoreFailures true
-		maxPriority1Violations 0
-		maxPriority2Violations 10
-		maxPriority3Violations 20
 	}
 }
 
