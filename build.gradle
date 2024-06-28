@@ -13,7 +13,7 @@ plugins {
 	// required by jitpack
 	id 'maven-publish'
 	// awesome git tag / gradle version integration
-	id 'pl.allegro.tech.build.axion-release' version '1.14.5'
+	id 'pl.allegro.tech.build.axion-release' version '1.13.14'
 }
 
 // [general] configuration
@@ -46,8 +46,8 @@ dependencies {
 	)
 
 	api (
-		"com.github.grational:hash-functions:release-1.0.0",
-		"com.github.grational:compressors:release-1.0.0"
+		"com.github.grational:hash-functions:release-1.1.1",
+		"com.github.grational:compressors:release-0.1.3"
 	)
 
 	testImplementation (
